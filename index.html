@@ -15,6 +15,11 @@ body{touch-action:none}#game{position:fixed;inset:0}canvas{display:block}
 #stats{position:fixed;z-index:9;left:32px;top:225px;font:13px system-ui,sans-serif;color:#536653;background:#f7f3dfc9;border-radius:14px;padding:8px 12px;box-shadow:0 4px 15px #56653b12}
 #action{position:fixed;z-index:12;left:50%;bottom:116px;transform:translateX(-50%);border:0;border-radius:17px;background:#2f6950;color:white;padding:14px 27px;min-width:190px;font:18px Georgia,serif;box-shadow:0 7px 18px #244a352e;display:none}
 #action:active{transform:translateX(-50%) scale(.97)}
+#missionNav{position:fixed;z-index:15;top:115px;right:28px;width:230px;background:#f8f4e9f2;border:3px solid #d9b447;border-radius:18px;padding:11px 14px;box-shadow:0 7px 22px #39452b2b;pointer-events:none}
+#missionNav .navLabel{font:10px system-ui,sans-serif;letter-spacing:2.5px;color:#7d876f;margin-bottom:4px}
+#missionNav .navRow{display:flex;align-items:center;gap:10px}
+#navArrow{width:48px;height:48px;border-radius:14px;background:#2f6950;color:white;display:grid;place-items:center;font:30px Arial;font-weight:bold;transition:transform .12s linear}
+#missionNav b{display:block;font-size:17px;color:#304d3c}#navDistance{display:block;font:12px system-ui,sans-serif;color:#71806f;margin-top:2px}
 #hint{position:fixed;z-index:9;left:50%;bottom:82px;transform:translateX(-50%);background:#f7f3dfdd;padding:7px 16px;border-radius:20px;font:13px system-ui,sans-serif;color:#637263;white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis}
 #controls{position:fixed;z-index:12;right:25px;bottom:20px;width:145px;height:145px}
 .ctrl{position:absolute;width:53px;height:53px;border:0;border-radius:15px;background:#f8f4e8ed;color:#596c59;box-shadow:0 5px 15px #58633a24;font-size:23px;font-weight:bold}.ctrl:active{transform:scale(.92);background:#fff}
@@ -28,7 +33,8 @@ body{touch-action:none}#game{position:fixed;inset:0}canvas{display:block}
 .result{margin-top:14px;background:#eef2df;border-radius:13px;padding:11px 13px;font:14px system-ui,sans-serif;line-height:1.45}.continue{width:100%;border:0;border-radius:13px;background:#2f6950;color:#fff;padding:13px;margin-top:10px;font:16px Georgia,serif}
 #start{position:fixed;z-index:40;inset:0;background:linear-gradient(#dce7c9cc,#eef1ddee);display:flex;align-items:center;justify-content:center;padding:24px}.startcard{width:min(520px,100%);background:#f8f4e7f5;border-radius:28px;padding:34px;box-shadow:0 15px 50px #52623c2b;text-align:center}.startcard .house{font-size:54px}.startcard h2{font-size:31px;margin:10px 0;color:#304c3c}.startcard p{font:15px system-ui,sans-serif;line-height:1.6;color:#637263}.startcard input{width:100%;border:1px solid #d7ddc9;background:#fffdf5;border-radius:13px;padding:13px;font-size:16px;margin:12px 0;font-family:system-ui,sans-serif}.startbtn{width:100%;border:0;border-radius:14px;background:#2f6950;color:#fff;padding:14px;font:18px Georgia,serif}
 #help{position:fixed;z-index:35;inset:0;background:#314735aa;display:none;align-items:center;justify-content:center;padding:25px}.helpbox{max-width:470px;background:#f8f4e7;border-radius:23px;padding:25px;box-shadow:0 12px 40px #0004}.helpbox h2{margin-top:0}.close{float:right;border:0;background:#e7ead8;border-radius:50%;width:36px;height:36px}
-@media(max-width:600px){#top{left:24px;right:18px;top:15px}.brand h1{font-size:22px}.brand p{font-size:9px}.topbuttons{gap:5px}.round{width:41px;height:41px;font-size:18px}#task{left:25px;top:112px;width:270px;padding:10px 13px}#stats{left:25px;top:201px;font-size:11px}#location{left:24px;bottom:21px}.locname{font-size:16px}.dialogcard{padding:20px 20px 17px;border-radius:21px}.question{font-size:18px}.answer{font-size:15px;padding:12px}#controls{right:18px;bottom:14px}.ctrl{width:50px;height:50px}#action{bottom:103px}.hint{bottom:72px}}
+@media(max-width:600px){#missionNav{top:105px;right:18px;width:205px;padding:9px 11px}.navRow{gap:8px}#navArrow{width:44px;height:44px;font-size:27px}#missionNav b{font-size:15px}
+#top{left:24px;right:18px;top:15px}.brand h1{font-size:22px}.brand p{font-size:9px}.topbuttons{gap:5px}.round{width:41px;height:41px;font-size:18px}#task{left:25px;top:112px;width:270px;padding:10px 13px}#stats{left:25px;top:201px;font-size:11px}#location{left:24px;bottom:21px}.locname{font-size:16px}.dialogcard{padding:20px 20px 17px;border-radius:21px}.question{font-size:18px}.answer{font-size:15px;padding:12px}#controls{right:18px;bottom:14px}.ctrl{width:50px;height:50px}#action{bottom:103px}.hint{bottom:72px}}
 </style>
 </head>
 <body>
@@ -42,7 +48,8 @@ body{touch-action:none}#game{position:fixed;inset:0}canvas{display:block}
 <div id="task"><span class="label">Misi semasa</span><span class="count" id="count">1 / 7</span><b id="taskText">Keluar melalui pintu rumah</b></div>
 <div id="stats">⭐ Mata Kejujuran <b id="score">20</b> &nbsp; · &nbsp; <span id="player">Murid</span></div>
 <div id="action">🚪 Buka pintu</div>
-<div id="hint">Gunakan butang arah untuk bergerak.</div>
+<div id="missionNav"><div class="navLabel">MISI SETERUSNYA</div><div class="navRow"><div id="navArrow">➤</div><div><b id="navName">Rumah Ibu</b><span id="navDistance">0 m</span></div></div></div>
+<div id="hint">Ikut anak panah untuk mencari misi.</div>
 <div id="location"><div class="homeicon" id="locIcon">⌂</div><div><div class="locname" id="locName">Rumah kamu</div><div class="locsub">PENGEMBARAAN KEJUJURAN</div></div></div>
 
 <div id="controls"><button class="ctrl" id="up">▲</button><button class="ctrl" id="left">◀</button><button class="ctrl" id="right">▶</button><button class="ctrl" id="down">▼</button></div>
@@ -228,16 +235,23 @@ function finish(){document.getElementById('taskText').textContent='Pengembaraan 
 function nearTarget(){if(mode==='home')return player.position.distanceTo(new THREE.Vector3(0,0,-1.2))<2.1; if(mission>=7)return false;return player.position.distanceTo(locations[mission].pos)<4.2}
 function actionLabel(){
  const a=document.getElementById('action');
+ const nav=document.getElementById('missionNav');
+ const navArrow=document.getElementById('navArrow');
+ const navName=document.getElementById('navName');
+ const navDistance=document.getElementById('navDistance');
  if(mode==='village'&&mission<7){
-   marker.visible=true;
-   marker.position.copy(player.position);
-   marker.position.y=3.5+Math.sin(performance.now()/350)*.18;
+   nav.style.display='block';
+   marker.visible=false;
    const target=locations[mission].pos;
    const dx=target.x-player.position.x, dz=target.z-player.position.z;
-   if(Math.abs(dx)+Math.abs(dz)>.1){
-     marker.rotation.y=Math.atan2(dx,dz);
-   }
- }else marker.visible=false;
+   const dist=Math.sqrt(dx*dx+dz*dz);
+   navName.textContent=locations[mission].name;
+   navDistance.textContent=Math.round(dist)+' m dari kamu';
+   navArrow.style.transform='rotate('+((Math.atan2(dx,dz)*180/Math.PI)-90)+'deg)';
+ }else{
+   nav.style.display='none';
+   marker.visible=false;
+ }
  if(nearTarget()){a.style.display='block';a.textContent=mode==='home'?'🚪 Keluar melalui pintu':'💬 Buka situasi'}else a.style.display='none'}
 document.getElementById('action').onclick=()=>{
  if(mode==='home'){mode='village';enterVillage();player.position.set(0,0,5);player.scale.set(.95,.95,.95);setText();document.getElementById('hint').textContent='Terokai kampung dan cari lokasi misi.';document.getElementById('action').style.display='none'}
