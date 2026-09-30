@@ -118,6 +118,7 @@ function makeHomeInterior(){
  sign('Rumah kamu',0, -1.8);
 }
 makeHomeInterior();
+const homeObjects=scene.children.filter(o=>o.isMesh||o.isSprite);
 
 const locations=[
  {name:'Rumah Ibu',pos:new THREE.Vector3(-17,0,-9),icon:'⌂',task:'Cari wang yang tercicir',speaker:'Ibu',q:'Kamu ternampak wang tercicir di halaman rumah. Apakah tindakan yang paling jujur?',a:[['Simpan kerana tiada siapa nampak.',-3,'Kejujuran penting walaupun tiada orang melihat.'],['Beritahu ibu dan cuba cari pemiliknya.',5,'Bagus! Kamu membantu menjaga hak orang lain.'],['Biarkan sahaja.',1,'Lebih baik membantu apabila kita mengetahui sesuatu yang penting.']]},
@@ -143,10 +144,8 @@ let villageBuilt=false;
 
 function enterVillage(){
  if(villageBuilt)return;
- // hide interior elements by moving them far away
- scene.traverse(o=>{if(o.userData.home){}});
+ homeObjects.forEach(o=>o.visible=false);
  buildVillage();villageBuilt=true;
- // move existing home pieces except player/npc into far space by identifying y and positions isn't safe; easiest add overlay village and set interior group absent
 }
 
 function makeWorldVillage(){
