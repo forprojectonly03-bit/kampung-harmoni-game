@@ -56,7 +56,7 @@ body{touch-action:none}#game{position:fixed;inset:0}canvas{display:block}
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xdde8c9);scene.fog=new THREE.Fog(0xdde8c9,30,90);
-const camera=new THREE.OrthographicCamera(-11,11,8,-8,.1,150);camera.position.set(18,23,18);camera.lookAt(0,0,0);
+const camera=new THREE.OrthographicCamera(-8,8,6,-6,.1,150);camera.position.set(12,16,12);camera.lookAt(0,0,0);
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;document.getElementById('game').appendChild(renderer.domElement);
 
 scene.add(new THREE.HemisphereLight(0xfffbed,0x839875,2.5));
@@ -104,6 +104,7 @@ const player=character('player');player.position.set(0,0,4);scene.add(player);
 const npc=character('npc');npc.scale.set(.9,.9,.9);npc.visible=false;scene.add(npc);
 
 function makeHomeInterior(){
+ const before=new Set(scene.children);
  box(M.grass,0,-.18,0,80,.2,80);
  box(M.floor,0,0,4,13,.25,10);
  // soft illustrated porch edge and wooden posts
@@ -130,36 +131,62 @@ box(M.wood2,3.8,3.0,-.7,.1,1.6,.1);box(M.wood2,3.8,3.0,-.7,2.3,.1,.1);
  // rug
  box(new THREE.MeshStandardMaterial({color:0xd8a276}),0,.16,4,4.2,.05,2.6);
  sign('Rumah kamu',0, -1.8);
+ scene.children.forEach(o=>{if(!before.has(o))o.userData.home=true});
 }
 makeHomeInterior();
-const homeObjects=scene.children.filter(o=>o.isMesh||o.isSprite);
+const homeObjects=scene.children.filter(o=>o.userData && o.userData.home);
 
 const locations=[
- {name:'Rumah Ibu',pos:new THREE.Vector3(-17,0,-9),icon:'⌂',task:'Cari wang yang tercicir',speaker:'Ibu',q:'Kamu ternampak wang tercicir di halaman rumah. Apakah tindakan yang paling jujur?',a:[['Simpan kerana tiada siapa nampak.',-3,'Kejujuran penting walaupun tiada orang melihat.'],['Beritahu ibu dan cuba cari pemiliknya.',5,'Bagus! Kamu membantu menjaga hak orang lain.'],['Biarkan sahaja.',1,'Lebih baik membantu apabila kita mengetahui sesuatu yang penting.']]},
- {name:'Rumah Amir',pos:new THREE.Vector3(17,0,-9),icon:'⌂',task:'Bantu Amir tentang kerja sekolah',speaker:'Amir',q:'Kamu belum menyiapkan kerja sekolah. Apakah yang patut kamu lakukan?',a:[['Beri alasan yang tidak benar.',-3,'Alasan palsu bukan amalan jujur.'],['Mengaku belum siap dan minta peluang.',5,'Berani mengakui keadaan sebenar ialah tanda kejujuran.'],['Salin kerja rakan.',-2,'Meniru bukan cara yang jujur.']]},
- {name:'Kedai Kampung',pos:new THREE.Vector3(0,0,-24),icon:'▣',task:'Pulangkan baki yang terlebih',speaker:'Kak Lina',q:'Kak Lina tersilap memberikan baki wang yang lebih. Apa kamu lakukan?',a:[['Simpan wang itu.',-3,'Wang lebihan bukan milik kamu.'],['Beritahu dan pulangkan wang tersebut.',5,'Betul! Kamu memulangkan hak orang lain.'],['Ambil sedikit sahaja.',-2,'Ia tetap bukan hak kamu.']]},
- {name:'Taman Seri Harmoni',pos:new THREE.Vector3(-24,0,0),icon:'♧',task:'Berani mengaku kesilapan',speaker:'Kak Mei',q:'Kamu tertendang bola hingga pasu di taman pecah. Apa kamu buat?',a:[['Salahkan orang lain.',-3,'Menutup kesilapan dengan penipuan bukan jujur.'],['Mengaku dan minta maaf.',5,'Hebat! Kamu bertanggungjawab atas tindakan sendiri.'],['Lari supaya tiada siapa tahu.',-2,'Melarikan diri tidak menyelesaikan masalah.']]},
- {name:'Rumah Siti',pos:new THREE.Vector3(-17,0,9),icon:'⌂',task:'Bantu menjaga barang rakan',speaker:'Siti',q:'Kamu nampak rakan mengambil barang yang bukan miliknya. Apa tindakan kamu?',a:[['Diam sahaja.',1,'Kamu boleh membantu dengan menasihati rakan.'],['Nasihati rakan supaya memulangkannya.',5,'Betul! Kamu menggalakkan amalan jujur.'],['Ikut mengambil barang.',-3,'Kesalahan orang lain bukan alasan untuk kita buat perkara sama.']]},
- {name:'Perpustakaan',pos:new THREE.Vector3(17,0,9),icon:'▤',task:'Jujur tentang buku yang rosak',speaker:'Cikgu Sara',q:'Kamu mendapati buku perpustakaan rosak selepas menggunakannya. Apa kamu buat?',a:[['Sembunyikan kerosakan.',-3,'Menyembunyikan kesilapan bukan jujur.'],['Beritahu guru dan minta maaf.',5,'Bagus! Kamu bertanggungjawab.'],['Letak semula tanpa memberitahu.',-2,'Lebih baik berterus terang supaya buku dapat dibaiki.']]},
- {name:'Peti Amanah',pos:new THREE.Vector3(0,0,24),icon:'◇',task:'Lindungi barang yang dijumpai',speaker:'Penjaga Kampung',q:'Kamu menemui barang berharga tanpa nama pemilik. Apakah tindakan terbaik?',a:[['Ambil untuk diri sendiri.',-3,'Barang itu bukan automatik menjadi milik kita.'],['Serahkan kepada orang dewasa untuk mencari pemilik.',5,'Tahniah! Kamu menjaga amanah dan hak orang lain.'],['Sembunyikan barang itu.',-2,'Kejujuran memerlukan kita menjaga barang orang lain.']]}
+ {name:'Rumah Ibu',pos:new THREE.Vector3(-10,0,-7),icon:'⌂',task:'Cari wang yang tercicir',speaker:'Ibu',q:'Kamu ternampak wang tercicir di halaman rumah. Apakah tindakan yang paling jujur?',a:[['Simpan kerana tiada siapa nampak.',-3,'Kejujuran penting walaupun tiada orang melihat.'],['Beritahu ibu dan cuba cari pemiliknya.',5,'Bagus! Kamu membantu menjaga hak orang lain.'],['Biarkan sahaja.',1,'Lebih baik membantu apabila kita mengetahui sesuatu yang penting.']]},
+ {name:'Rumah Amir',pos:new THREE.Vector3(10,0,-7),icon:'⌂',task:'Bantu Amir tentang kerja sekolah',speaker:'Amir',q:'Kamu belum menyiapkan kerja sekolah. Apakah yang patut kamu lakukan?',a:[['Beri alasan yang tidak benar.',-3,'Alasan palsu bukan amalan jujur.'],['Mengaku belum siap dan minta peluang.',5,'Berani mengakui keadaan sebenar ialah tanda kejujuran.'],['Salin kerja rakan.',-2,'Meniru bukan cara yang jujur.']]},
+ {name:'Kedai Kampung',pos:new THREE.Vector3(0,0,-16),icon:'▣',task:'Pulangkan baki yang terlebih',speaker:'Kak Lina',q:'Kak Lina tersilap memberikan baki wang yang lebih. Apa kamu lakukan?',a:[['Simpan wang itu.',-3,'Wang lebihan bukan milik kamu.'],['Beritahu dan pulangkan wang tersebut.',5,'Betul! Kamu memulangkan hak orang lain.'],['Ambil sedikit sahaja.',-2,'Ia tetap bukan hak kamu.']]},
+ {name:'Taman Seri Harmoni',pos:new THREE.Vector3(-16,0,0),icon:'♧',task:'Berani mengaku kesilapan',speaker:'Kak Mei',q:'Kamu tertendang bola hingga pasu di taman pecah. Apa kamu buat?',a:[['Salahkan orang lain.',-3,'Menutup kesilapan dengan penipuan bukan jujur.'],['Mengaku dan minta maaf.',5,'Hebat! Kamu bertanggungjawab atas tindakan sendiri.'],['Lari supaya tiada siapa tahu.',-2,'Melarikan diri tidak menyelesaikan masalah.']]},
+ {name:'Rumah Siti',pos:new THREE.Vector3(-10,0,8),icon:'⌂',task:'Bantu menjaga barang rakan',speaker:'Siti',q:'Kamu nampak rakan mengambil barang yang bukan miliknya. Apa tindakan kamu?',a:[['Diam sahaja.',1,'Kamu boleh membantu dengan menasihati rakan.'],['Nasihati rakan supaya memulangkannya.',5,'Betul! Kamu menggalakkan amalan jujur.'],['Ikut mengambil barang.',-3,'Kesalahan orang lain bukan alasan untuk kita buat perkara sama.']]},
+ {name:'Perpustakaan',pos:new THREE.Vector3(10,0,8),icon:'▤',task:'Jujur tentang buku yang rosak',speaker:'Cikgu Sara',q:'Kamu mendapati buku perpustakaan rosak selepas menggunakannya. Apa kamu buat?',a:[['Sembunyikan kerosakan.',-3,'Menyembunyikan kesilapan bukan jujur.'],['Beritahu guru dan minta maaf.',5,'Bagus! Kamu bertanggungjawab.'],['Letak semula tanpa memberitahu.',-2,'Lebih baik berterus terang supaya buku dapat dibaiki.']]},
+ {name:'Peti Amanah',pos:new THREE.Vector3(0,0,17),icon:'◇',task:'Lindungi barang yang dijumpai',speaker:'Penjaga Kampung',q:'Kamu menemui barang berharga tanpa nama pemilik. Apakah tindakan terbaik?',a:[['Ambil untuk diri sendiri.',-3,'Barang itu bukan automatik menjadi milik kita.'],['Serahkan kepada orang dewasa untuk mencari pemilik.',5,'Tahniah! Kamu menjaga amanah dan hak orang lain.'],['Sembunyikan barang itu.',-2,'Kejujuran memerlukan kita menjaga barang orang lain.']]}
 ];
 
 function buildVillage(){
- // broad illustrated paths
+ const path=new THREE.MeshStandardMaterial({color:0xd7c39a,roughness:1,flatShading:true});
+ box(path,0,-.1,0,7.5,.18,42);
+ box(path,0,-.09,0,42,.18,7.5);
 
- box(new THREE.MeshStandardMaterial({color:0xd6c39c,roughness:1,flatShading:true}),0,-.1,0,9,.18,65);
- box(new THREE.MeshStandardMaterial({color:0xd6c39c,roughness:1,flatShading:true}),0,-.09,0,65,.18,9);
- // small stepping stones
- for(let z=-28;z<=28;z+=7)mesh(new THREE.CylinderGeometry(1.1,.9,.16,8),new THREE.MeshStandardMaterial({color:0xc8b88f,roughness:1,flatShading:true}),-5,.02,z);
+ // Small illustrated houses around the central square.
+ function house(x,z,body,roof){
+   box(body,x,2,z,6.2,4,5.2);
+   const r=mesh(new THREE.ConeGeometry(4.6,2.6,4),roof,x,5.1,z);
+   r.rotation.y=Math.PI/4;
+   box(M.wood2,x,1.15,z-2.65,1.15,2.25,.2);
+   box(M.blue,x-1.9,2.45,z-2.65,1.35,1.25,.12);
+   box(M.blue,x+1.9,2.45,z-2.65,1.35,1.25,.12);
+   box(M.wood2,x,3.05,z-2.74,3.9,.12,.12);
+   box(M.wood2,x,1.85,z-2.74,3.9,.12,.12);
+ }
+ house(-10,-7,M.wall,M.roof); house(10,-7,new THREE.MeshStandardMaterial({color:0xe4c8a6,roughness:1,flatShading:true}),new THREE.MeshStandardMaterial({color:0xa77d66,roughness:1,flatShading:true}));
+ house(-10,8,new THREE.MeshStandardMaterial({color:0xd8e0bd,roughness:1,flatShading:true}),new THREE.MeshStandardMaterial({color:0x8ea477,roughness:1,flatShading:true}));
+ house(10,8,new THREE.MeshStandardMaterial({color:0xe8d8b8,roughness:1,flatShading:true}),new THREE.MeshStandardMaterial({color:0x7f9a83,roughness:1,flatShading:true}));
 
- // houses
- for(const [x,z] of [[-17,-9],[17,-9],[-17,9],[17,9]]){box(M.wall,x,2.2,z,7,4.4,6);const roof=mesh(new THREE.ConeGeometry(5.3,2.8,4),M.roof,x,5.5,z);roof.rotation.y=Math.PI/4;box(M.wood2,x,1.1,z-3.05,1.2,2.1,.2);box(M.blue,x-2,2.4,z-3.05,1.3,1.2,.12);box(M.blue,x+2,2.4,z-3.05,1.3,1.2,.12)}
- for(let x=-30;x<=30;x+=10){tree(x,-13);tree(x,13)}for(let z=-25;z<=25;z+=10){tree(-13,z);tree(13,z)}
- for(let i=-30;i<=30;i+=6){flower(i,-4,0xf0c36b);flower(i,4,0xe99cae)}
- sign('Kedai Kampung',0,-27);sign('Taman Seri Harmoni',-29,0);sign('Perpustakaan',19,13);sign('Peti Amanah',0,27);
- // decorative stones and bushes
- for(let i=0;i<14;i++){const x=-28+(i*11)%56,z=-30+(i*17)%60;mesh(new THREE.IcosahedronGeometry(.32,0),new THREE.MeshStandardMaterial({color:0xc6c8a5,roughness:1,flatShading:true}),x,.25,z);}
+ // Shop, library and trust chest.
+ box(M.wall,0,-13,5.0,6.4,3.8,.2);
+ box(M.wood2,0,-12.8,4.0,6.8,.25,.25);
+ box(M.wall,10,8,5.0,5.8,3.6,.2);
+ box(M.wood2,10,8,4.0,6.1,.25,.25);
 
+ // Central park: trees, benches, flowers and stones.
+ for(let x=-5;x<=5;x+=2.5){tree(x,12);flower(x,10,0xf0c36b)}
+ for(let x=-5;x<=5;x+=2.5){flower(x,-10,0xe99cae)}
+ box(M.wood2,-3,.55,3,2.5,.15,.55);box(M.wood2,3,.55,3,2.5,.15,.55);
+ for(let i=0;i<16;i++){const a=i*.72;const rr=4.8;flower(Math.cos(a)*rr,Math.sin(a)*rr, i%2?0xe7a3b1:0xf0c36b)}
+ for(let i=0;i<10;i++){const x=-19+(i*7)%38,z=-19+(i*11)%38;mesh(new THREE.IcosahedronGeometry(.35,0),new THREE.MeshStandardMaterial({color:0xc5c4a5,roughness:1,flatShading:true}),x,.25,z)}
+
+ // Lamp posts.
+ function lamp(x,z){box(M.wood2,x,1.5,z,.18,3,.18);mesh(new THREE.SphereGeometry(.32,8,6),new THREE.MeshStandardMaterial({color:0xf5e6ad,emissive:0x554b22,emissiveIntensity:.25}),x,3.2,z)}
+ lamp(-5,-4);lamp(5,-4);lamp(-5,4);lamp(5,4);
+
+ sign('Kedai Kampung',0,-17);
+ sign('Taman Seri Harmoni',-11,1);
+ sign('Perpustakaan',10,13);
+ sign('PETI AMANAH',0,18);
 }
 let villageBuilt=false;
 
@@ -174,6 +201,7 @@ function makeWorldVillage(){
 }
 
 let mode='home',mission=0,score=20,paused=false,moving={up:false,down:false,left:false,right:false},currentTarget=null,dialogOpen=false;
+const marker=new THREE.Group();const markerMat=new THREE.MeshStandardMaterial({color:0xf1c45c,emissive:0x4f3c12,emissiveIntensity:.25,flatShading:true});const markerArrow=mesh(new THREE.ConeGeometry(.38,.85,4),markerMat,0,0,0);markerArrow.rotation.x=Math.PI;markerArrow.parent=marker;scene.add(marker);marker.position.y=3.5;
 function setText(){document.getElementById('count').textContent=(Math.min(mission+1,7))+' / 7';document.getElementById('score').textContent=score;document.getElementById('taskText').textContent=mode==='home'?'Keluar melalui pintu rumah':locations[mission]?.task||'Semua misi selesai';document.getElementById('locName').textContent=mode==='home'?'Rumah kamu':(locations[mission]?.name||'Kampung Seri Harmoni');document.getElementById('locIcon').textContent=mode==='home'?'⌂':(locations[mission]?.icon||'◇')}
 
 function openDialogue(q){
@@ -190,7 +218,7 @@ function choose(q,i){
 function cardButtons(){return [...document.querySelectorAll('.answer')]}
 function finish(){document.getElementById('taskText').textContent='Pengembaraan selesai!';document.getElementById('action').style.display='none';document.getElementById('hint').textContent='Tahniah! Kamu telah menyelesaikan 7 misi kejujuran.';setTimeout(()=>{const card=document.getElementById('dialogCard');dialogOpen=true;document.getElementById('dialogue').style.display='flex';card.innerHTML='<div class="dialoghead"><div class="avatar">🏆</div><div><div class="topic">PENJAGA KEJUJURAN</div><div class="speaker">Misi Selesai</div></div></div><div class="question">Tahniah, '+document.getElementById('player').textContent+'! Kamu telah menjelajah Kampung Seri Harmoni.</div><div class="result">⭐ Mata Kejujuran: <b>'+score+'</b><br><br>Kejujuran membantu membina kepercayaan, menjaga hak orang lain dan mewujudkan kehidupan bermasyarakat yang harmoni.</div><button class="continue" id="done">Tutup</button>';document.getElementById('done').onclick=()=>document.getElementById('dialogue').style.display='none'},250)}
 function nearTarget(){if(mode==='home')return player.position.distanceTo(new THREE.Vector3(0,0,-1.2))<2.1; if(mission>=7)return false;return player.position.distanceTo(locations[mission].pos)<4.2}
-function actionLabel(){const a=document.getElementById('action');if(nearTarget()){a.style.display='block';a.textContent=mode==='home'?'🚪 Keluar melalui pintu':'💬 Buka situasi'}else a.style.display='none'}
+function actionLabel(){const a=document.getElementById('action');if(mode==='village'&&mission<7){marker.visible=true;marker.position.x=locations[mission].pos.x;marker.position.z=locations[mission].pos.z;marker.position.y=3.2+Math.sin(performance.now()/350)*.25;}else marker.visible=false;if(nearTarget()){a.style.display='block';a.textContent=mode==='home'?'🚪 Keluar melalui pintu':'💬 Buka situasi'}else a.style.display='none'}
 document.getElementById('action').onclick=()=>{
  if(mode==='home'){mode='village';enterVillage();player.position.set(0,0,5);player.scale.set(.95,.95,.95);setText();document.getElementById('hint').textContent='Terokai kampung dan cari lokasi misi.';document.getElementById('action').style.display='none'}
  else if(nearTarget()&&mission<7)openDialogue(locations[mission]);
@@ -202,7 +230,7 @@ function move(dt){
  if(dx||dz){const v=new THREE.Vector3(dx,0,dz).normalize();player.position.addScaledVector(v,speed*dt);player.position.x=THREE.MathUtils.clamp(player.position.x,-31,31);player.position.z=THREE.MathUtils.clamp(player.position.z,-31,31);player.rotation.y=Math.atan2(dx,dz)}
  actionLabel();
  const target=mode==='home'?new THREE.Vector3(0,0,-1.2):(locations[mission]?.pos);
- if(target){const camTarget=player.position.clone();camTarget.y=0;camera.position.x+=(camTarget.x+18-camera.position.x)*.06;camera.position.z+=(camTarget.z+18-camera.position.z)*.06;camera.lookAt(camTarget)}
+ if(target){const camTarget=player.position.clone();camTarget.y=0;camera.position.x+=(camTarget.x+11-camera.position.x)*.075;camera.position.z+=(camTarget.z+11-camera.position.z)*.075;camera.lookAt(camTarget)}
 }
 
 function bind(id,key){const el=document.getElementById(id);const on=e=>{e.preventDefault();moving[key]=true};const off=e=>{e.preventDefault();moving[key]=false};el.addEventListener('pointerdown',on);el.addEventListener('pointerup',off);el.addEventListener('pointercancel',off);el.addEventListener('pointerleave',off)}
@@ -221,7 +249,7 @@ setText();
 let last=performance.now();
 function loop(t){requestAnimationFrame(loop);const dt=Math.min(.04,(t-last)/1000);last=t;move(dt);renderer.render(scene,camera)}
 requestAnimationFrame(loop);
-addEventListener('resize',()=>{const a=innerWidth/innerHeight;const h=8,w=h*a;camera.left=-w;camera.right=w;camera.top=h;camera.bottom=-h;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+addEventListener('resize',()=>{const a=innerWidth/innerHeight;const h=6,w=h*a;camera.left=-w;camera.right=w;camera.top=h;camera.bottom=-h;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script>
 </body>
 </html>
