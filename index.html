@@ -201,7 +201,15 @@ function makeWorldVillage(){
 }
 
 let mode='home',mission=0,score=20,paused=false,moving={up:false,down:false,left:false,right:false},currentTarget=null,dialogOpen=false;
-const marker=new THREE.Group();const markerMat=new THREE.MeshStandardMaterial({color:0xf1c45c,emissive:0x4f3c12,emissiveIntensity:.25,flatShading:true});const markerArrow=mesh(new THREE.ConeGeometry(.38,.85,4),markerMat,0,0,0);markerArrow.rotation.x=Math.PI;markerArrow.parent=marker;scene.add(marker);marker.position.y=3.5;
+const marker=new THREE.Group();
+const markerMat=new THREE.MeshStandardMaterial({color:0xf1c45c,emissive:0x4f3c12,emissiveIntensity:.35,flatShading:true});
+const markerArrow=mesh(new THREE.ConeGeometry(.5,1.15,4),markerMat,0,0,0);
+markerArrow.rotation.x=Math.PI/2;
+markerArrow.parent=marker;
+const markerStem=mesh(new THREE.CylinderGeometry(.08,.08,.7,6),markerMat,0,.55,0);
+markerStem.parent=marker;
+scene.add(marker);
+marker.position.y=3.6;
 function setText(){document.getElementById('count').textContent=(Math.min(mission+1,7))+' / 7';document.getElementById('score').textContent=score;document.getElementById('taskText').textContent=mode==='home'?'Keluar melalui pintu rumah':locations[mission]?.task||'Semua misi selesai';document.getElementById('locName').textContent=mode==='home'?'Rumah kamu':(locations[mission]?.name||'Kampung Seri Harmoni');document.getElementById('locIcon').textContent=mode==='home'?'⌂':(locations[mission]?.icon||'◇')}
 
 function openDialogue(q){
@@ -218,7 +226,19 @@ function choose(q,i){
 function cardButtons(){return [...document.querySelectorAll('.answer')]}
 function finish(){document.getElementById('taskText').textContent='Pengembaraan selesai!';document.getElementById('action').style.display='none';document.getElementById('hint').textContent='Tahniah! Kamu telah menyelesaikan 7 misi kejujuran.';setTimeout(()=>{const card=document.getElementById('dialogCard');dialogOpen=true;document.getElementById('dialogue').style.display='flex';card.innerHTML='<div class="dialoghead"><div class="avatar">🏆</div><div><div class="topic">PENJAGA KEJUJURAN</div><div class="speaker">Misi Selesai</div></div></div><div class="question">Tahniah, '+document.getElementById('player').textContent+'! Kamu telah menjelajah Kampung Seri Harmoni.</div><div class="result">⭐ Mata Kejujuran: <b>'+score+'</b><br><br>Kejujuran membantu membina kepercayaan, menjaga hak orang lain dan mewujudkan kehidupan bermasyarakat yang harmoni.</div><button class="continue" id="done">Tutup</button>';document.getElementById('done').onclick=()=>document.getElementById('dialogue').style.display='none'},250)}
 function nearTarget(){if(mode==='home')return player.position.distanceTo(new THREE.Vector3(0,0,-1.2))<2.1; if(mission>=7)return false;return player.position.distanceTo(locations[mission].pos)<4.2}
-function actionLabel(){const a=document.getElementById('action');if(mode==='village'&&mission<7){marker.visible=true;marker.position.x=locations[mission].pos.x;marker.position.z=locations[mission].pos.z;marker.position.y=3.2+Math.sin(performance.now()/350)*.25;}else marker.visible=false;if(nearTarget()){a.style.display='block';a.textContent=mode==='home'?'🚪 Keluar melalui pintu':'💬 Buka situasi'}else a.style.display='none'}
+function actionLabel(){
+ const a=document.getElementById('action');
+ if(mode==='village'&&mission<7){
+   marker.visible=true;
+   marker.position.copy(player.position);
+   marker.position.y=3.5+Math.sin(performance.now()/350)*.18;
+   const target=locations[mission].pos;
+   const dx=target.x-player.position.x, dz=target.z-player.position.z;
+   if(Math.abs(dx)+Math.abs(dz)>.1){
+     marker.rotation.y=Math.atan2(dx,dz);
+   }
+ }else marker.visible=false;
+ if(nearTarget()){a.style.display='block';a.textContent=mode==='home'?'🚪 Keluar melalui pintu':'💬 Buka situasi'}else a.style.display='none'}
 document.getElementById('action').onclick=()=>{
  if(mode==='home'){mode='village';enterVillage();player.position.set(0,0,5);player.scale.set(.95,.95,.95);setText();document.getElementById('hint').textContent='Terokai kampung dan cari lokasi misi.';document.getElementById('action').style.display='none'}
  else if(nearTarget()&&mission<7)openDialogue(locations[mission]);
